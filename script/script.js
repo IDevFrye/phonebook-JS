@@ -168,10 +168,13 @@
     ]);
     const table = createTable();
     const form = createForm();
+    const footer = createFooter();
+    const signature = createSignature(title);
 
     header.headerContainer.append(logo);
+    footer.footerContainer.append(signature);
     main.mainContainer.append(buttonGroup.btnWrapper, table, form.overlay);
-    app.append(header, main);
+    app.append(header, main, footer);
 
     return {
       list: table.tbody,
@@ -207,6 +210,25 @@
   const renderContacts = (elem, data) => {
     const allRow = data.map(createRow);
     elem.append(...allRow);
+  };
+
+  const createSignature = (title) => {
+    const p = document.createElement('p');
+    p.textContent = `Все права защищены. ${String.fromCharCode(169)}${title}`;
+
+    return p;
+  };
+
+  const createFooter = () => {
+    const footer = document.createElement('footer');
+    footer.classList.add('footer');
+
+    const footerContainer = createContainer();
+    footer.append(footerContainer);
+
+    footer.footerContainer = footerContainer;
+
+    return footer;
   };
 
   const init = (selectorApp, title) => {
