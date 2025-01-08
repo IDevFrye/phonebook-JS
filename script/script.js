@@ -88,8 +88,8 @@
     thead.insertAdjacentHTML('beforeend', `
       <tr>
         <th class="delete">Удалить</th>
-        <th>Имя</th>
-        <th>Фамилия</th>
+        <th class="sortable" data-sort="name">Имя</th>
+        <th class="sortable" data-sort="price">Фамилия</th>
         <th>Телефон</th>
         <th>Редактирование</th>
       </tr>
@@ -98,6 +98,7 @@
     const tbody = document.createElement('tbody');
 
     table.append(thead, tbody);
+    table.thead = thead;
     table.tbody = tbody;
 
     return table;
@@ -179,6 +180,7 @@
 
     return {
       list: table.tbody,
+      thead: table.thead,
       logo,
       btnAdd: buttonGroup.btns[0],
       btnDel: buttonGroup.btns[1],
@@ -265,12 +267,28 @@
     });
   };
 
+  const sortTable = (tbody, col, isAsc) => {
+    col = (col === 'name') ? 0 : 1;
+    const rows = Array.from(tbody.children);
+
+    rows.sort((a, b) => {
+      const aValue = [...a.children].slice(1)[col].textContent;
+      const bValue = [...b.children].slice(1)[col].textContent;
+
+      return isAsc ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    });
+
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+  };
+
   const init = (selectorApp, title) => {
     const app = document.querySelector(selectorApp);
     const phoneBook = renderPhonebook(app, title);
 
     const {
       list,
+      thead,
       logo,
       btnAdd,
       btnDel,
@@ -288,7 +306,7 @@
 
     formOverlay.addEventListener('click', e => {
       const target = e.target;
-      if (target === formOverlay || target.classList.contains('close')){
+      if (target === formOverlay || target.classList.contains('close')) {
         formOverlay.classList.remove('is-visible');
       };
     });
@@ -314,6 +332,30 @@
       });
       list.append(contact);
     }, 1000);
+
+    thead.addEventListener('click', e => {
+      const target = e.target;
+      if (target.classList.contains('sortable')) {
+        const column = target.dataset.sort;
+        const isAscending = target.classList.contains('asc');
+
+        document.querySelectorAll('.sortable').forEach(th => {
+          if (th !== target) {
+            th.classList.remove('asc', 'desc');
+          }
+        });
+
+        if (isAscending) {
+          target.classList.remove('asc');
+          target.classList.add('desc');
+        } else {
+          target.classList.remove('desc');
+          target.classList.add('asc');
+        };
+
+        sortTable(list, column, isAscending);
+      }
+    });
   };
 
   window.phoneBookInit = init;
