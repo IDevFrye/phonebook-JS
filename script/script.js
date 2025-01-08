@@ -91,6 +91,7 @@
         <th>Имя</th>
         <th>Фамилия</th>
         <th>Телефон</th>
+        <th>Редактирование</th>
       </tr>
     `);
 
@@ -207,7 +208,19 @@
     tr.phoneLink = phoneLink;
     tdPhone.append(phoneLink);
 
-    tr.append(tdDel, tdName, tdSurname, tdPhone);
+    const tdEdit = document.createElement('td');
+    const buttonGroup = createButtonsGroup([
+      {
+        className: 'btn btn-primary mr-3',
+        type: 'button',
+        text: '',
+      },
+    ]);
+    buttonGroup.btns[0].innerHTML = `<i class="fa-regular fa-pen-to-square"></i>`;
+    buttonGroup.btnWrapper.style.marginBottom = 0;
+    tdEdit.append(buttonGroup.btnWrapper);
+
+    tr.append(tdDel, tdName, tdSurname, tdPhone, tdEdit);
 
     return tr;
   };
