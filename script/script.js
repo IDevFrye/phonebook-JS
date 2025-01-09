@@ -1,3 +1,4 @@
+
 'use strict';
 
 {
@@ -23,6 +24,11 @@
       phone: '+79876543210',
     },
   ];
+
+  const addContactData = contact => {
+    data.push(contact);
+    console.log('data: ', data);
+  };
 
   const createContainer = () => {
     const container = document.createElement('div');
@@ -152,6 +158,25 @@
     };
   };
 
+  const createSignature = (title) => {
+    const p = document.createElement('p');
+    p.textContent = `Все права защищены. ${String.fromCharCode(169)}${title}`;
+
+    return p;
+  };
+
+  const createFooter = () => {
+    const footer = document.createElement('footer');
+    footer.classList.add('footer');
+
+    const footerContainer = createContainer();
+    footer.append(footerContainer);
+
+    footer.footerContainer = footerContainer;
+
+    return footer;
+  };
+
   const renderPhonebook = (app, title) => {
     const header = createHeader();
     const logo = createLogo(title);
@@ -169,13 +194,13 @@
       },
     ]);
     const table = createTable();
-    const form = createForm();
+    const {overlay, form} = createForm();
     const footer = createFooter();
     const signature = createSignature(title);
 
     header.headerContainer.append(logo);
     footer.footerContainer.append(signature);
-    main.mainContainer.append(buttonGroup.btnWrapper, table, form.overlay);
+    main.mainContainer.append(buttonGroup.btnWrapper, table, overlay);
     app.append(header, main, footer);
 
     return {
@@ -184,8 +209,8 @@
       logo,
       btnAdd: buttonGroup.btns[0],
       btnDel: buttonGroup.btns[1],
-      formOverlay: form.overlay,
-      form: form.form,
+      formOverlay: overlay,
+      form,
     };
   };
 
@@ -220,7 +245,8 @@
         text: '',
       },
     ]);
-    buttonGroup.btns[0].innerHTML = `<i class="fa-regular fa-pen-to-square"></i>`;
+    buttonGroup.btns[0].innerHTML =
+    `<i class="fa-regular fa-pen-to-square"></i>`;
     buttonGroup.btnWrapper.style.marginBottom = 0;
     tdEdit.append(buttonGroup.btnWrapper);
 
@@ -236,25 +262,6 @@
     return allRow;
   };
 
-  const createSignature = (title) => {
-    const p = document.createElement('p');
-    p.textContent = `Все права защищены. ${String.fromCharCode(169)}${title}`;
-
-    return p;
-  };
-
-  const createFooter = () => {
-    const footer = document.createElement('footer');
-    footer.classList.add('footer');
-
-    const footerContainer = createContainer();
-    footer.append(footerContainer);
-
-    footer.footerContainer = footerContainer;
-
-    return footer;
-  };
-
   const hoverRow = (allRow, logo) => {
     const text = logo.textContent;
     allRow.forEach(contact => {
@@ -267,50 +274,46 @@
     });
   };
 
-  const sortTable = (tbody, col, isAsc) => {
-    col = (col === 'name') ? 0 : 1;
-    const rows = Array.from(tbody.children);
-
-    rows.sort((a, b) => {
-      const aValue = [...a.children].slice(1)[col].textContent;
-      const bValue = [...b.children].slice(1)[col].textContent;
-
-      return isAsc ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-    });
-
-    tbody.innerHTML = '';
-    rows.forEach(row => tbody.appendChild(row));
-  };
-
-  const init = (selectorApp, title) => {
-    const app = document.querySelector(selectorApp);
-    const phoneBook = renderPhonebook(app, title);
-
-    const {
-      list,
-      thead,
-      logo,
-      btnAdd,
-      btnDel,
-      formOverlay,
-      form,
-    } = phoneBook;
-
-    // TODO: функционал
-    const allRow = renderContacts(list, data);
-    hoverRow(allRow, logo);
-
-    btnAdd.addEventListener('click', () => {
+  const modalControl = (btnAdd, formOverlay) => {
+    const openModal = () => {
       formOverlay.classList.add('is-visible');
+    };
+    const closeModal = () => {
+      formOverlay.classList.remove('is-visible');
+    };
+    btnAdd.addEventListener('click', () => {
+      openModal();
     });
-
     formOverlay.addEventListener('click', e => {
       const target = e.target;
       if (target === formOverlay || target.classList.contains('close')) {
-        formOverlay.classList.remove('is-visible');
+        closeModal();
       };
     });
 
+    return {
+      closeModal,
+    };
+  };
+
+  const addContactPage = (contact, list) => {
+    list.append(createRow(contact));
+  };
+
+  const formControl = (form, list, closeModal) => {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const newContact = Object.fromEntries(formData);
+
+      addContactPage(newContact, list);
+      addContactData(newContact);
+      form.reset();
+      closeModal();
+    });
+  };
+
+  const deleteControl = (btnDel, list) => {
     btnDel.addEventListener('click', () => {
       document.querySelectorAll('.delete').forEach(del => {
         del.classList.toggle('is-visible');
@@ -323,16 +326,25 @@
         target.closest('.contact').remove();
       };
     });
+  };
 
-    setTimeout(() => {
-      const contact = createRow({
-        name: 'Андрей',
-        surname: 'Костин',
-        phone: '+79876543210',
-      });
-      list.append(contact);
-    }, 1000);
+  const sortTable = (tbody, col, isAsc) => {
+    col = (col === 'name') ? 0 : 1;
+    const rows = Array.from(tbody.children);
 
+    rows.sort((a, b) => {
+      const aValue = [...a.children].slice(1)[col].textContent;
+      const bValue = [...b.children].slice(1)[col].textContent;
+
+      return isAsc ? aValue.localeCompare(bValue) :
+        bValue.localeCompare(aValue);
+    });
+
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+  };
+
+  const sortControl = (thead, list) => {
     thead.addEventListener('click', e => {
       const target = e.target;
       if (target.classList.contains('sortable')) {
@@ -356,6 +368,28 @@
         sortTable(list, column, isAscending);
       }
     });
+  };
+
+  const init = (selectorApp, title) => {
+    const app = document.querySelector(selectorApp);
+
+    const {
+      list,
+      thead,
+      logo,
+      btnAdd,
+      btnDel,
+      formOverlay,
+      form,
+    } = renderPhonebook(app, title);
+
+    // TODO: функционал
+    const allRow = renderContacts(list, data);
+    const {closeModal} = modalControl(btnAdd, formOverlay);
+    hoverRow(allRow, logo);
+    deleteControl(btnDel, list);
+    formControl(form, list, closeModal);
+    sortControl(thead, list);
   };
 
   window.phoneBookInit = init;
