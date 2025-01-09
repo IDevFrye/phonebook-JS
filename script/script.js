@@ -2,32 +2,22 @@
 'use strict';
 
 {
-  const data = [
-    {
-      name: 'Иван',
-      surname: 'Петров',
-      phone: '+79514545454',
-    },
-    {
-      name: 'Игорь',
-      surname: 'Семёнов',
-      phone: '+79999999999',
-    },
-    {
-      name: 'Семён',
-      surname: 'Иванов',
-      phone: '+79800252525',
-    },
-    {
-      name: 'Мария',
-      surname: 'Попова',
-      phone: '+79876543210',
-    },
-  ];
+  const getStorage = (key) => {
+    const storedData = localStorage.getItem(key);
+    return storedData ? JSON.parse(storedData) : [];
+  };
 
-  const addContactData = contact => {
-    data.push(contact);
-    console.log('data: ', data);
+  const setStorage = (key, obj) => {
+    const currentStorage = getStorage(key);
+    currentStorage.push(obj);
+    localStorage.setItem(key, JSON.stringify(currentStorage));
+  };
+
+  const removeStorage = (phone) => {
+    const key = 'contacts';
+    const data = getStorage(key);
+    const updatedData = data.filter(contact => contact.phone !== phone);
+    localStorage.setItem(key, JSON.stringify(updatedData));
   };
 
   const createContainer = () => {
@@ -307,7 +297,7 @@
       const newContact = Object.fromEntries(formData);
 
       addContactPage(newContact, list);
-      addContactData(newContact);
+      setStorage('contacts', newContact);
       form.reset();
       closeModal();
     });
@@ -323,7 +313,9 @@
     list.addEventListener('click', e => {
       const target = e.target;
       if (target.closest('.del-icon')) {
-        target.closest('.contact').remove();
+        const contact = target.closest('.contact');
+        contact.remove();
+        removeStorage(contact.phoneLink.textContent);
       };
     });
   };
@@ -384,6 +376,8 @@
     } = renderPhonebook(app, title);
 
     // TODO: функционал
+    const data = getStorage('contacts');
+    console.log('data: ', data);
     const allRow = renderContacts(list, data);
     const {closeModal} = modalControl(btnAdd, formOverlay);
     hoverRow(allRow, logo);
