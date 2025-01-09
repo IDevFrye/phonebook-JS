@@ -320,6 +320,16 @@
     });
   };
 
+  const saveSortState = (field, order) => {
+    const sortState = {field, order};
+    localStorage.setItem('sortState', JSON.stringify(sortState));
+  };
+
+  const getSortState = () => {
+    const sortState = localStorage.getItem('sortState');
+    return sortState ? JSON.parse(sortState) : null;
+  };
+
   const sortTable = (tbody, col, isAsc) => {
     col = (col === 'name') ? 0 : 1;
     const rows = Array.from(tbody.children);
@@ -341,7 +351,7 @@
       const target = e.target;
       if (target.classList.contains('sortable')) {
         const column = target.dataset.sort;
-        const isAscending = target.classList.contains('asc');
+        let isAscending = target.classList.contains('asc');
 
         document.querySelectorAll('.sortable').forEach(th => {
           if (th !== target) {
@@ -352,10 +362,14 @@
         if (isAscending) {
           target.classList.remove('asc');
           target.classList.add('desc');
+          saveSortState(column, 'desc');
         } else {
           target.classList.remove('desc');
           target.classList.add('asc');
+          saveSortState(column, 'asc');
         };
+
+        isAscending = target.classList.contains('asc');
 
         sortTable(list, column, isAscending);
       }
@@ -375,10 +389,20 @@
       form,
     } = renderPhonebook(app, title);
 
-    // TODO: функционал
     const data = getStorage('contacts');
-    console.log('data: ', data);
     const allRow = renderContacts(list, data);
+
+    const sortState = getSortState();
+    console.log('sortState: ', sortState);
+    if (sortState) {
+      sortTable(list, sortState.field, sortState.order === 'asc');
+      const columnHeader = document.querySelector(
+        `[data-sort="${sortState.field}"]`);
+      if (columnHeader) {
+        columnHeader.classList.add(sortState.order);
+      }
+    };
+
     const {closeModal} = modalControl(btnAdd, formOverlay);
     hoverRow(allRow, logo);
     deleteControl(btnDel, list);
