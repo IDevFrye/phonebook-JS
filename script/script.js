@@ -37,6 +37,3 @@ export const init = (selectorApp, title) => {
   control.formControl(form, list, closeModal);
   control.sortControl(thead, list);
 };
-
-// window.phoneBookInit = init;
-
