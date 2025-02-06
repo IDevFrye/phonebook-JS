@@ -1,6 +1,13 @@
-import render from './modules/render.js';
-import {getStorage, getSortState} from './modules/serviceStorage.js';
-import * as control from './modules/controllers.js';
+import render from './script/render.js';
+import {getStorage, getSortState} from './script/serviceStorage.js';
+import * as control from './script/controllers.js';
+
+// import 'https://kit.fontawesome.com/86d1196dac.js';
+import './index.html';
+import './scss/index.scss';
+// import 'https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css';
+// import 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css';
+
 
 const {renderPhonebook, renderContacts, hoverRow} = render;
 
@@ -37,3 +44,7 @@ export const init = (selectorApp, title) => {
   control.formControl(form, list, closeModal);
   control.sortControl(thead, list);
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+  init('#app', 'Andrey');
+});

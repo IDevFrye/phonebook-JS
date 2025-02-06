@@ -2,6 +2,7 @@ import * as markup from './createMarkup.js';
 
 const renderPhonebook = (app, title) => {
   const header = markup.createHeader();
+  const imageLogo = markup.createImageLogo();
   const logo = markup.createLogo(title);
   const main = markup.createMain();
   const buttonGroup = markup.createButtonsGroup([
@@ -21,7 +22,7 @@ const renderPhonebook = (app, title) => {
   const footer = markup.createFooter();
   const signature = markup.createSignature(title);
 
-  header.headerContainer.append(logo);
+  header.headerContainer.append(imageLogo, logo);
   footer.footerContainer.append(signature);
   main.mainContainer.append(buttonGroup.btnWrapper, table, overlay);
   app.append(header, main, footer);
