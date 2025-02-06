@@ -21,7 +21,7 @@
     "webpack-dev-server": "^5.2.0"
   },
   "scripts": {
-    "start": "set NODE_ENV=development&&webpack serve --open",
+    "start": "npm install&&set NODE_ENV=development&&webpack serve --open",
     "dev": "set NODE_ENV=development&&webpack",
     "build": "set NODE_ENV=production&&webpack",
     "clear": "rd /s /q dist"
